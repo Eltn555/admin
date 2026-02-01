@@ -1,8 +1,8 @@
 export type SentOtpParams = {
-    phone: string;
+    phoneNumber: string;
 }
 
 export type VerifyOtpParams = {
-    phone: string;
+    phoneNumber: string;
     otp: string;
 }

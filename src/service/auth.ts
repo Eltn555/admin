@@ -15,7 +15,7 @@ export class AuthService {
 
     public static async verifyOtp(params: VerifyOtpParams) {
         try {
-            const { data } = await axios.post('/validate-otp', params);
+            const { data } = await axios.post('/auth/validate-otp', params);
             return data;
         } catch (error) {
             console.error(error);
@@ -25,7 +25,7 @@ export class AuthService {
 
     public static async validateToken() {
         try {
-            const { data } = await axios.get('/validate-token');
+            const { data } = await axios.get('/auth/validate-token');
             return data;
         } catch (error) {
             localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
@@ -37,7 +37,7 @@ export class AuthService {
 
     public static async logout() {
         try {
-            const { data } = await axios.post('/logout');
+            const { data } = await axios.post('/auth/logout');
             localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
             localStorage.removeItem("user");
             localStorage.removeItem("isLoggedIn");
