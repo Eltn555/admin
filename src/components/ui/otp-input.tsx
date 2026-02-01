@@ -6,9 +6,10 @@ interface OtpInputProps {
   length?: number;
   onComplete: (otp: string) => void;
   disabled?: boolean;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-export function OtpInput({ length = 6, onComplete, disabled = false }: OtpInputProps) {
+export function OtpInput({ length = 6, onComplete, onKeyDown, disabled = false }: OtpInputProps) {
   const [otp, setOtp] = useState<string[]>(new Array(length).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -32,6 +33,9 @@ export function OtpInput({ length = 6, onComplete, disabled = false }: OtpInputP
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
+    if (onKeyDown) {
+      onKeyDown(e);
+    }
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
