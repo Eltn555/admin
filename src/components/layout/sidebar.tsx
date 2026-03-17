@@ -21,6 +21,8 @@ export function Sidebar() {
   const router = useRouter();
   const { user, logout, isLoading } = useAuthStore();
 
+  console.log(user);
+
   const handleLogout = async () => {
     await logout();
     router.push("/login");
@@ -75,8 +77,8 @@ export function Sidebar() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Admin</p>
-            <p className="text-xs text-zinc-500 truncate">{user?.phone || "Loading..."}</p>
+            <p className="text-sm font-medium text-white truncate">{user?.fullName}</p>
+            <p className="text-xs text-zinc-500 truncate">{user?.role.toUpperCase()}</p>
           </div>
         </div>
 

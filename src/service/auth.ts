@@ -1,6 +1,7 @@
 import { SentOtpParams, VerifyOtpParams } from "../types/auth";
 import axios from "../lib/axios";
 import { LocalStorageKeys } from "@/enums/local-storage.enum";
+import { AxiosError } from "axios";
 
 export class AuthService {
     public static async sendOtp(params: SentOtpParams) {
@@ -36,15 +37,23 @@ export class AuthService {
     }
 
     public static async logout() {
-        try {
-            const { data } = await axios.post('/auth/logout');
+        const clearStorage = () => {
             localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
             localStorage.removeItem("user");
             localStorage.removeItem("isLoggedIn");
-            return data;
+        };
+
+        try {
+            const response = await axios.post('/auth/logout');
+            clearStorage();
+            return { success: true, message: response.data?.message || "Logged out successfully" };
         } catch (error) {
+            clearStorage();
+            if (error instanceof AxiosError && error.response) {
+                return { success: true, message: error.response.data?.message || "Logged out successfully" };
+            }
             console.error(error);
-            throw error;
+            return { success: true, message: "Logged out successfully" };
         }
     }
 }

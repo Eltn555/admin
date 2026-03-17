@@ -1,11 +1,7 @@
 import { create } from "zustand";
-import Cookies from "js-cookie";
-import { authApi, TOKEN_KEY } from "./api";
-
-interface User {
-  id: string;
-  phone: string;
-}
+import { AuthService } from "@/service/auth";
+import { LocalStorageKeys } from "@/enums/local-storage.enum";
+import { User } from "@/types/user";
 
 interface AuthState {
   user: User | null;
@@ -30,7 +26,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   sendOtp: async (phone: string) => {
     set({ isLoading: true, error: null });
 
-    const response = await authApi.sendOtp(phone);
+    const response = await AuthService.sendOtp({ phoneNumber: phone });
 
     if (response.success) {
       set({ isLoading: false });
@@ -44,47 +40,51 @@ export const useAuthStore = create<AuthState>((set) => ({
   validateOtp: async (phone: string, otp: string) => {
     set({ isLoading: true, error: null });
 
-    const response = await authApi.validateOtp(phone, otp);
+    const response = await AuthService.verifyOtp({ phoneNumber: phone, otp });
 
     if (response.success && response.data) {
-      const { token, user } = response.data;
-      Cookies.set(TOKEN_KEY, token, { expires: 7, secure: true, sameSite: "strict" });
-      set({ user, isAuthenticated: true, isLoading: false });
+      set({ user: response.data.user, isAuthenticated: true, isLoading: false });
+      
       return true;
     }
-
+    
     set({ isLoading: false, error: response.message || "Invalid OTP" });
     return false;
   },
 
   checkAuth: async () => {
-    const token = Cookies.get(TOKEN_KEY);
+    const token = localStorage.getItem(LocalStorageKeys.ACCESS_TOKEN);
 
-    if (!token) {
+    if (!token || token === "undefined") {
       set({ isAuthenticated: false, isLoading: false, user: null });
       return false;
     }
 
     set({ isLoading: true });
 
-    const response = await authApi.validateToken();
+    try {
+      const response = await AuthService.validateToken();
 
-    if (response.success && response.data) {
-      set({ user: response.data.user, isAuthenticated: true, isLoading: false });
-      return true;
+      if (response.user) {
+        localStorage.setItem("user", JSON.stringify(response.user));
+        set({ user: response.user, isAuthenticated: true, isLoading: false });
+        return true;
+      }
+
+      throw new Error("No user in response");
+    } catch {
+      localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+      set({ user: null, isAuthenticated: false, isLoading: false });
+      return false;
     }
-
-    Cookies.remove(TOKEN_KEY);
-    set({ user: null, isAuthenticated: false, isLoading: false });
-    return false;
   },
 
   logout: async () => {
     set({ isLoading: true });
-
-    await authApi.logout();
-
-    Cookies.remove(TOKEN_KEY);
+    await AuthService.logout();
+    document.cookie = "auth_token=; path=/; max-age=0; SameSite=Strict";
     set({ user: null, isAuthenticated: false, isLoading: false, error: null });
   },
 
