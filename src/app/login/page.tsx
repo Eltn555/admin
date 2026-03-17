@@ -100,15 +100,15 @@ function LoginForm() {
 
     setIsLoading(true)
     try {
-      const { user, token } = await AuthService.verifyOtp({ phoneNumber: phone, otp });
+      const { user, accessToken } = await AuthService.verifyOtp({ phoneNumber: phone, otp });
 
       // store user and token in local storage
       localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem(LocalStorageKeys.ACCESS_TOKEN, token);
+      localStorage.setItem(LocalStorageKeys.ACCESS_TOKEN, accessToken);
       localStorage.setItem("isLoggedIn", "true");
       
       // Set cookie for middleware (required for server-side route protection)
-      document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
+      document.cookie = `auth_token=${accessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
 
       toast.success("Login successful", {
         description: "You are now logged in",

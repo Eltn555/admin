@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAccessToken, getAccessTokenFromHeader } from "../helpers/auth.helper";
 
 const axiosInstance = axios.create({
-    baseURL: '/api'
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 });
 
 axiosInstance.interceptors.request.use((config) => {
