@@ -80,7 +80,6 @@ export type UpdateCategoryDto = Partial<CreateCategoryDto>;
 export interface GetCategoriesParams {
   page?: number;
   pageSize?: number;
-  search?: string;
   parentId?: string;
   isActive?: boolean;
 }
