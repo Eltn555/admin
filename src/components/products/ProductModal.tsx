@@ -5,10 +5,12 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FileUpload } from "@/components/ui/FileUpload";
 import { Category } from "@/types/category";
 import { CreateProductDto, Product } from "@/types/product";
 import { ProductService } from "@/service/products";
 import { LanguageCode } from "@/types/category";
+import { UploadedFile } from "@/types/file";
 
 const LANGUAGES = [
   { code: LanguageCode.ENGLISH, label: "EN", name: "English" },
@@ -65,6 +67,7 @@ export function ProductModal({ product, categories, onClose, onSuccess }: Produc
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
     product?.categories.map((c) => c.id) ?? []
   );
+  const [files, setFiles] = useState<UploadedFile[]>(product?.files ?? []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -120,6 +123,7 @@ export function ProductModal({ product, categories, onClose, onSuccess }: Produc
       stock: parseInt(stock) || 0,
       isActive,
       categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
+      fileIds: files.length > 0 ? files.map((f) => f.id) : undefined,
     };
 
     setIsLoading(true);
@@ -374,6 +378,15 @@ export function ProductModal({ product, categories, onClose, onSuccess }: Produc
                   />
                 </button>
               </div>
+
+              {/* Product images — multiple allowed */}
+              <FileUpload
+                label="Product Images"
+                value={files}
+                onChange={setFiles}
+                multiple={true}
+                params={isEdit ? { entityType: "PRODUCT", entityId: product.id, type: "PRODUCT" } : undefined}
+              />
             </div>
           </div>
 

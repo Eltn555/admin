@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FileUpload } from "@/components/ui/FileUpload";
 import { Category, CreateCategoryDto, LanguageCode } from "@/types/category";
 import { CategoryService } from "@/service/categories";
+import { UploadedFile } from "@/types/file";
 
 const LANGUAGES = [
   { code: LanguageCode.ENGLISH, label: "EN", name: "English" },
@@ -58,6 +60,7 @@ export function CategoryModal({ category, categories, onClose, onSuccess }: Cate
   const [isActive, setIsActive] = useState(category?.isActive ?? true);
   const [position, setPosition] = useState(String(category?.position ?? 0));
   const [parentId, setParentId] = useState(category?.parentId ?? "");
+  const [files, setFiles] = useState<UploadedFile[]>(category?.files ?? []);
 
   const updateTranslation = (lang: string, field: "name" | "description", value: string) => {
     setTranslations((prev) => ({
@@ -88,6 +91,7 @@ export function CategoryModal({ category, categories, onClose, onSuccess }: Cate
       isActive,
       position: parseInt(position) || 0,
       parentId: parentId || undefined,
+      fileIds: files.length > 0 ? files.map((f) => f.id) : undefined,
     };
 
     setIsLoading(true);
@@ -261,6 +265,15 @@ export function CategoryModal({ category, categories, onClose, onSuccess }: Cate
                   />
                 </button>
               </div>
+
+              {/* Image upload — single image for category */}
+              <FileUpload
+                label="Category Image"
+                value={files}
+                onChange={setFiles}
+                multiple={false}
+                params={isEdit ? { entityType: "CATEGORY", entityId: category.id, type: "CATEGORY" } : undefined}
+              />
             </div>
           </div>
 

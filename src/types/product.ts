@@ -16,6 +16,8 @@ export interface ProductCategory {
   }[];
 }
 
+import { UploadedFile } from "./file";
+
 export interface Product {
   id: string;
   slug?: string;
@@ -27,6 +29,7 @@ export interface Product {
   updatedAt: string;
   translations: ProductTranslation[];
   categories: ProductCategory[];
+  files: UploadedFile[];
 }
 
 export interface ProductsResponse {
@@ -51,6 +54,7 @@ export interface CreateProductDto {
   salePrice?: number;
   isActive?: boolean;
   categoryIds?: string[];
+  fileIds?: string[];
 }
 
 export type UpdateProductDto = Partial<CreateProductDto>;

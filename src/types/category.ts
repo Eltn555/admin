@@ -1,3 +1,5 @@
+import { UploadedFile } from "./file";
+
 export enum LanguageCode {
   ENGLISH = 'en',
   UZBEK = 'uz',
@@ -48,6 +50,7 @@ export interface Category {
   updatedAt: string;
   translations: CategoryTranslation[];
   parent: CategoryParent | null;
+  files: UploadedFile[];
   _count: {
     children: number;
   };
@@ -73,6 +76,7 @@ export interface CreateCategoryDto {
   isActive?: boolean;
   position?: number;
   parentId?: string;
+  fileIds?: string[];
 }
 
 export type UpdateCategoryDto = Partial<CreateCategoryDto>;
