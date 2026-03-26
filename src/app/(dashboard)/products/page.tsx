@@ -19,8 +19,14 @@ function getProductDisplayName(product: Product): string {
   );
 }
 
+/**
+ * Format price to 2 decimal places
+ * @param value - Price value 1000000 -> 1 000 000
+ * @returns Formatted price 1 000 000
+ */
 function formatPrice(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formattedValue = value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
 export default function ProductsPage() {
@@ -178,7 +184,7 @@ export default function ProductsPage() {
                             {getProductDisplayName(product)}
                           </p>
                           <p className="text-xs text-zinc-600 mt-0.5 font-mono">
-                            {product.id.slice(0, 8)}…
+                            {product.slug}
                           </p>
                         </div>
                       </td>
@@ -188,15 +194,15 @@ export default function ProductsPage() {
                         {product.salePrice != null ? (
                           <div>
                             <p className="text-sm font-semibold text-emerald-400">
-                              ${formatPrice(product.salePrice)}
+                              {formatPrice(product.salePrice)} UZS
                             </p>
                             <p className="text-xs text-zinc-500 line-through mt-0.5">
-                              ${formatPrice(product.price)}
+                              {formatPrice(product.price)} UZS
                             </p>
                           </div>
                         ) : (
                           <p className="text-sm font-semibold text-white">
-                            ${formatPrice(product.price)}
+                            {formatPrice(product.price)} UZS
                           </p>
                         )}
                       </td>

@@ -91,7 +91,7 @@ export function CategoryModal({ category, categories, onClose, onSuccess }: Cate
       isActive,
       position: parseInt(position) || 0,
       parentId: parentId || undefined,
-      fileIds: files.length > 0 ? files.map((f) => f.id) : undefined,
+      fileId: files[0]?.id || undefined,
     };
 
     setIsLoading(true);

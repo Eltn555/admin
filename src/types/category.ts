@@ -76,7 +76,7 @@ export interface CreateCategoryDto {
   isActive?: boolean;
   position?: number;
   parentId?: string;
-  fileIds?: string[];
+  fileId?: string;
 }
 
 export type UpdateCategoryDto = Partial<CreateCategoryDto>;
