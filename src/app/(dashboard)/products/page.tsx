@@ -9,6 +9,7 @@ import { Category, CategoriesResponse } from "@/types/category";
 import { ProductService } from "@/service/products";
 import { CategoryService } from "@/service/categories";
 import { ProductModal } from "@/components/products/ProductModal";
+import { BulkUploadModal } from "@/components/products/BulkUploadModal";
 
 function getProductDisplayName(product: Product): string {
   return (
@@ -38,6 +39,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeletingLoading, setIsDeletingLoading] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
@@ -108,12 +110,20 @@ export default function ProductsPage() {
               : "Manage your product catalog"}
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Product
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={() => setBulkModalOpen(true)}>
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Bulk Upload
+          </Button>
+          <Button onClick={openCreate}>
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Product
+          </Button>
+        </div>
       </div>
 
       {/* Table card */}
@@ -354,6 +364,14 @@ export default function ProductsPage() {
           </>
         )}
       </div>
+
+      {/* Bulk upload modal */}
+      {bulkModalOpen && (
+        <BulkUploadModal
+          onClose={() => setBulkModalOpen(false)}
+          onSuccess={fetchProducts}
+        />
+      )}
 
       {/* Create / Edit modal */}
       {modalOpen && (

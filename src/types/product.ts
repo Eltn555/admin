@@ -65,3 +65,24 @@ export interface GetProductsParams {
   categoryId?: string;
   isActive?: boolean;
 }
+
+export interface BulkUploadResult {
+  success: boolean;
+  row: number;
+  slug: string;
+  name: string;
+  price: number;
+  salePrice?: number;
+  categoryName: string;
+  action: "created" | "updated" | "failed";
+  message: string;
+}
+
+export interface BulkUploadResponse {
+  results: BulkUploadResult[];
+  total: number;
+  totalSuccess: number;
+  totalFailed: number;
+  createdProducts: number;
+  updatedProducts: number;
+}
