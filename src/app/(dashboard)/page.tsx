@@ -76,7 +76,7 @@ export default function DashboardPage() {
             </p>
             {user && (
               <p className="mt-4 text-emerald-300 text-sm">
-                Logged in as: <span className="font-mono">{user.phone}</span>
+                Logged in as: <span className="font-mono">{user.phoneNumber}</span>
               </p>
             )}
           </div>
