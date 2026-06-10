@@ -64,6 +64,7 @@ export interface GetProductsParams {
   pageSize?: number;
   categoryId?: string;
   isActive?: boolean;
+  search?: string;
 }
 
 export interface BulkUploadResult {
