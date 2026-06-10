@@ -194,17 +194,7 @@ export default function CollectionsPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
-        <ProductPicker
-          products={products}
-          isLoading={isProductsLoading}
-          search={search}
-          onSearchChange={setSearch}
-          collectionProductIds={collectionProductIds}
-          addingIds={addingIds}
-          onAdd={handleAddProduct}
-        />
-
-        <DraggableCollectionList
+      <DraggableCollectionList
           entries={entries}
           isLoading={isCollectionLoading}
           isReordering={isReordering}
@@ -215,6 +205,16 @@ export default function CollectionsPage() {
           onDelete={handleDelete}
           onCancelDelete={() => setDeletingId(null)}
           onConfirmDelete={handleConfirmDelete}
+        />
+
+        <ProductPicker
+          products={products}
+          isLoading={isProductsLoading}
+          search={search}
+          onSearchChange={setSearch}
+          collectionProductIds={collectionProductIds}
+          addingIds={addingIds}
+          onAdd={handleAddProduct}
         />
       </div>
     </div>
