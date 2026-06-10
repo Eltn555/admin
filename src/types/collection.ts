@@ -48,3 +48,8 @@ export interface GetProductCollectionsParams {
   pageSize: number;
   isActive?: boolean;
 }
+
+export interface ReorderProductCollectionsDto {
+  collection: CollectionType;
+  orderedIds: string[];
+}

@@ -122,15 +122,11 @@ export default function CollectionsPage() {
         return old?.position !== index;
       });
 
-      await Promise.all(
-        withPositions.map((entry, index) => {
-          const old = previous.find((e) => e.id === entry.id);
-          if (old?.position === index) return Promise.resolve();
-          return CollectionService.updateCollection(entry.id, { position: index });
-        })
-      );
-
       if (changed) {
+        await CollectionService.reorderCollection({
+          collection: activeCollection,
+          orderedIds: withPositions.map((entry) => entry.id),
+        });
         toast.success("Order updated");
       }
     } catch (error) {

@@ -4,6 +4,7 @@ import {
   GetProductCollectionsParams,
   ProductCollection,
   ProductCollectionsResponse,
+  ReorderProductCollectionsDto,
   UpdateProductCollectionDto,
 } from "../types/collection";
 
@@ -56,6 +57,15 @@ export class CollectionService {
   public static async deleteCollection(id: string): Promise<void> {
     try {
       await axios.delete(`/product-collections/${id}`);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  public static async reorderCollection(dto: ReorderProductCollectionsDto): Promise<void> {
+    try {
+      await axios.patch("/product-collections/reorder", dto);
     } catch (error) {
       console.error(error);
       throw error;
