@@ -86,4 +86,5 @@ export interface GetCategoriesParams {
   pageSize?: number;
   parentId?: string;
   isActive?: boolean;
+  search?: string;
 }

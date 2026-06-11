@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Category, CategoriesResponse } from "@/types/category";
 import { CategoryService } from "@/service/categories";
 import { CategoryModal } from "@/components/categories/CategoryModal";
@@ -18,19 +19,49 @@ function getCategoryDisplayName(category: Category): string {
   );
 }
 
+type ActiveFilter = "default" | "active" | "inactive";
+
+const ACTIVE_FILTER_OPTIONS = [
+  { value: "default", label: "Default" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Not Active" },
+];
+
 export default function CategoriesPage() {
   const [data, setData] = useState<CategoriesResponse | null>(null);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>("default");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeletingLoading, setIsDeletingLoading] = useState(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, activeFilter]);
+
   const fetchCategories = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await CategoryService.getCategories({ page, pageSize: 20 });
+      const res = await CategoryService.getCategories({
+        page,
+        pageSize: 20,
+        ...(debouncedSearch
+          ? { search: debouncedSearch }
+          : {
+              ...(activeFilter === "active" && { isActive: true }),
+              ...(activeFilter === "inactive" && { isActive: false }),
+            }),
+      });
       setData(res);
     } catch (error) {
       const message = error instanceof AxiosError ? error.response?.data?.message ?? error.message : "Something went wrong";
@@ -38,11 +69,24 @@ export default function CategoriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page]);
+  }, [page, debouncedSearch, activeFilter]);
+
+  useEffect(() => {
+    CategoryService.getCategories({ pageSize: 100, page: 1 })
+      .then((res: CategoriesResponse) => setAllCategories(res.results))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    if (value.trim()) {
+      setActiveFilter("default");
+    }
+  };
 
   const openCreate = () => {
     setEditingCategory(undefined);
@@ -78,21 +122,57 @@ export default function CategoriesPage() {
   return (
     <div>
       {/* Page header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Categories</h1>
-          <p className="text-zinc-400">
-            {data
-              ? `${data.totalCount} ${data.totalCount === 1 ? "category" : "categories"} total`
-              : "Manage your product categories"}
-          </p>
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Categories</h1>
+            <p className="text-zinc-400">
+              {data
+                ? `${data.totalCount} ${data.totalCount === 1 ? "category" : "categories"} total`
+                : "Manage your product categories"}
+            </p>
+          </div>
+          <Button onClick={openCreate} className="shrink-0">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Category
+          </Button>
         </div>
-        <Button onClick={openCreate}>
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Category
-        </Button>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Select
+            className="sm:w-44"
+            label="Active"
+            value={activeFilter}
+            onChange={(v) => setActiveFilter(v as ActiveFilter)}
+            options={ACTIVE_FILTER_OPTIONS}
+            disabled={!!debouncedSearch}
+          />
+
+          <div className="relative flex-1 min-w-0">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search categories…"
+              className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Table card */}
@@ -126,8 +206,16 @@ export default function CategoriesPage() {
                 />
               </svg>
             </div>
-            <p className="font-medium text-zinc-400">No categories yet</p>
-            <p className="text-sm mt-1">Click &quot;New Category&quot; to create your first one</p>
+            <p className="font-medium text-zinc-400">
+              {debouncedSearch || activeFilter !== "default"
+                ? "No categories match your filters"
+                : "No categories yet"}
+            </p>
+            <p className="text-sm mt-1">
+              {debouncedSearch || activeFilter !== "default"
+                ? "Try adjusting your search or filters"
+                : 'Click "New Category" to create your first one'}
+            </p>
           </div>
         ) : (
           <>
@@ -312,7 +400,7 @@ export default function CategoriesPage() {
       {modalOpen && (
         <CategoryModal
           category={editingCategory}
-          categories={data?.results ?? []}
+          categories={allCategories}
           onClose={() => {
             setModalOpen(false);
             setEditingCategory(undefined);
