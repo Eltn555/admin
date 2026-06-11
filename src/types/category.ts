@@ -53,6 +53,7 @@ export interface Category {
   files: UploadedFile[];
   _count: {
     children: number;
+    products: number;
   };
 }
 

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { TableThumbnail } from "@/components/ui/table-thumbnail";
 import { Category, CategoriesResponse } from "@/types/category";
 import { CategoryService } from "@/service/categories";
 import { CategoryModal } from "@/components/categories/CategoryModal";
@@ -223,22 +224,25 @@ export default function CategoriesPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-zinc-800">
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Slug
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                      Products
+                    </th>
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Pos
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Parent
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Children
                     </th>
                     <th className="px-6 py-4" />
@@ -248,26 +252,32 @@ export default function CategoriesPage() {
                   {data.results.map((category) => (
                     <tr key={category.id} className="hover:bg-zinc-800/40 transition-colors group">
                       {/* Name */}
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {getCategoryDisplayName(category)}
-                          </p>
-                          <p className="text-xs text-zinc-600 mt-0.5 font-mono">
-                            {category.id.slice(0, 8)}…
-                          </p>
+                      <td className="p-1">
+                        <div className="flex items-center gap-3">
+                          <TableThumbnail
+                            src={category.files[0]?.url}
+                            alt={getCategoryDisplayName(category)}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {getCategoryDisplayName(category)}
+                            </p>
+                            <p className="text-xs text-zinc-600 mt-0.5 font-mono truncate">
+                              {category.id.slice(0, 8)}…
+                            </p>
+                          </div>
                         </div>
                       </td>
 
                       {/* Slug */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span className="text-sm text-zinc-400 font-mono">
                           {category.slug || <span className="text-zinc-600 italic">—</span>}
                         </span>
                       </td>
 
                       {/* Status */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
                             category.isActive
@@ -284,20 +294,25 @@ export default function CategoriesPage() {
                         </span>
                       </td>
 
+                      {/* Products */}
+                      <td className="p-3 text-center">
+                        <span className="text-sm text-zinc-400">{category._count.products}</span>
+                      </td>
+
                       {/* Position */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span className="text-sm text-zinc-400">{category.position}</span>
                       </td>
 
                       {/* Parent */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span className="text-sm text-zinc-400 font-mono">
                           {category.parent?.slug || <span className="text-zinc-600 italic">—</span>}
                         </span>
                       </td>
 
                       {/* Children count */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span
                           className={`text-sm ${
                             category._count.children > 0 ? "text-zinc-300 font-medium" : "text-zinc-600"
@@ -308,7 +323,7 @@ export default function CategoriesPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="px-6 py-4">
+                      <td className="p-3">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => openEdit(category)}

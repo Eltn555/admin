@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { TableThumbnail } from "@/components/ui/table-thumbnail";
 import { Product, ProductsResponse } from "@/types/product";
 import { Category, CategoriesResponse } from "@/types/category";
 import { ProductService } from "@/service/products";
@@ -275,19 +276,19 @@ export default function ProductsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-zinc-800">
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Product
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Price
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Stock
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="text-center px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                       Categories
                     </th>
                     <th className="px-6 py-4" />
@@ -297,19 +298,25 @@ export default function ProductsPage() {
                   {data.results.map((product) => (
                     <tr key={product.id} className="hover:bg-zinc-800/40 transition-colors group">
                       {/* Product name */}
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {getProductDisplayName(product)}
-                          </p>
-                          <p className="text-xs text-zinc-600 mt-0.5 font-mono">
-                            {product.slug}
-                          </p>
+                      <td className="p-1">
+                        <div className="flex items-center gap-2">
+                          <TableThumbnail
+                            src={product.files[0]?.url}
+                            alt={getProductDisplayName(product)}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {getProductDisplayName(product)}
+                            </p>
+                            <p className="text-xs text-zinc-600 mt-0.5 font-mono truncate">
+                              {product.slug}
+                            </p>
+                          </div>
                         </div>
                       </td>
 
                       {/* Price */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         {product.salePrice != null ? (
                           <div>
                             <p className="text-sm font-semibold text-emerald-400">
@@ -327,7 +334,7 @@ export default function ProductsPage() {
                       </td>
 
                       {/* Stock */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
                             product.stock > 0
@@ -345,7 +352,7 @@ export default function ProductsPage() {
                       </td>
 
                       {/* Status */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
                             product.isActive
@@ -363,7 +370,7 @@ export default function ProductsPage() {
                       </td>
 
                       {/* Categories */}
-                      <td className="px-6 py-4">
+                      <td className="p-3">
                         {product.categories.length === 0 ? (
                           <span className="text-zinc-600 italic text-sm">—</span>
                         ) : (
@@ -386,7 +393,7 @@ export default function ProductsPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="px-6 py-4">
+                      <td className="p-3 text-center">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => openEdit(product)}
