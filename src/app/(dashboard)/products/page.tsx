@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Product, ProductsResponse } from "@/types/product";
 import { Category, CategoriesResponse } from "@/types/category";
 import { ProductService } from "@/service/products";
@@ -30,21 +31,62 @@ function formatPrice(value: number): string {
   return formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
+function getCategoryDisplayName(category: Category): string {
+  return (
+    category.translations.find((t) => t.language.code === "en")?.name ||
+    category.translations.find((t) => t.language.code === "uz")?.name ||
+    category.translations[0]?.name ||
+    category.slug ||
+    category.id.slice(0, 8)
+  );
+}
+
+type ActiveFilter = "default" | "active" | "inactive";
+
+const ACTIVE_FILTER_OPTIONS = [
+  { value: "default", label: "Default" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Not Active" },
+];
+
 export default function ProductsPage() {
   const [data, setData] = useState<ProductsResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>("default");
+  const [categoryId, setCategoryId] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeletingLoading, setIsDeletingLoading] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, activeFilter, categoryId]);
+
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await ProductService.getProducts({ page, pageSize: 20 });
+      const res = await ProductService.getProducts({
+        page,
+        pageSize: 20,
+        ...(debouncedSearch
+          ? { search: debouncedSearch }
+          : {
+              ...(activeFilter === "active" && { isActive: true }),
+              ...(activeFilter === "inactive" && { isActive: false }),
+              ...(categoryId && { categoryId }),
+            }),
+      });
       setData(res);
     } catch (error) {
       const message =
@@ -53,7 +95,15 @@ export default function ProductsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page]);
+  }, [page, debouncedSearch, activeFilter, categoryId]);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    if (value.trim()) {
+      setActiveFilter("default");
+      setCategoryId("");
+    }
+  };
 
   // Load categories once for the modal's category selector
   useEffect(() => {
@@ -101,28 +151,79 @@ export default function ProductsPage() {
   return (
     <div>
       {/* Page header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Products</h1>
-          <p className="text-zinc-400">
-            {data
-              ? `${data.totalCount} ${data.totalCount === 1 ? "product" : "products"} total`
-              : "Manage your product catalog"}
-          </p>
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Products</h1>
+            <p className="text-zinc-400">
+              {data
+                ? `${data.totalCount} ${data.totalCount === 1 ? "product" : "products"} total`
+                : "Manage your product catalog"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="secondary" onClick={() => setBulkModalOpen(true)}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Bulk Upload
+            </Button>
+            <Button onClick={openCreate}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Product
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setBulkModalOpen(true)}>
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Select
+            className="sm:w-44"
+            label="Active"
+            value={activeFilter}
+            onChange={(v) => setActiveFilter(v as ActiveFilter)}
+            options={ACTIVE_FILTER_OPTIONS}
+            disabled={!!debouncedSearch}
+          />
+
+          <Select
+            className="sm:w-52"
+            label="Category"
+            value={categoryId}
+            onChange={setCategoryId}
+            options={[
+              { value: "", label: "Default" },
+              ...categories.map((category) => ({
+                value: category.id,
+                label: getCategoryDisplayName(category),
+              })),
+            ]}
+            disabled={!!debouncedSearch}
+          />
+
+          <div className="relative flex-1 min-w-0">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
-            Bulk Upload
-          </Button>
-          <Button onClick={openCreate}>
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Product
-          </Button>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search products…"
+              className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+          </div>
         </div>
       </div>
 
@@ -157,8 +258,16 @@ export default function ProductsPage() {
                 />
               </svg>
             </div>
-            <p className="font-medium text-zinc-400">No products yet</p>
-            <p className="text-sm mt-1">Click &quot;New Product&quot; to add your first one</p>
+            <p className="font-medium text-zinc-400">
+              {debouncedSearch || activeFilter !== "default" || categoryId
+                ? "No products match your filters"
+                : "No products yet"}
+            </p>
+            <p className="text-sm mt-1">
+              {debouncedSearch || activeFilter !== "default" || categoryId
+                ? "Try adjusting your search or filters"
+                : 'Click "New Product" to add your first one'}
+            </p>
           </div>
         ) : (
           <>
