@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { AuthService } from "@/service/auth";
 import { LocalStorageKeys } from "@/enums/local-storage.enum";
+import { clearAuthSession } from "@/helpers/auth.helper";
 import { User } from "@/types/user";
 
 interface AuthState {
@@ -73,9 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       throw new Error("No user in response");
     } catch {
-      localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
-      localStorage.removeItem("user");
-      localStorage.removeItem("isLoggedIn");
+      clearAuthSession();
       set({ user: null, isAuthenticated: false, isLoading: false });
       return false;
     }
@@ -84,7 +83,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     set({ isLoading: true });
     await AuthService.logout();
-    document.cookie = "auth_token=; path=/; max-age=0; SameSite=Strict";
     set({ user: null, isAuthenticated: false, isLoading: false, error: null });
   },
 

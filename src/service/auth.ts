@@ -1,6 +1,6 @@
 import { SentOtpParams, VerifyOtpParams } from "../types/auth";
 import axios from "../lib/axios";
-import { LocalStorageKeys } from "@/enums/local-storage.enum";
+import { clearAuthSession } from "@/helpers/auth.helper";
 import { AxiosError } from "axios";
 
 export class AuthService {
@@ -29,26 +29,18 @@ export class AuthService {
             const { data } = await axios.get('/auth/validate-token');
             return data;
         } catch (error) {
-            localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
-            localStorage.removeItem("user");
-            localStorage.removeItem("isLoggedIn");
+            clearAuthSession();
             throw error;
         }
     }
 
     public static async logout() {
-        const clearStorage = () => {
-            localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
-            localStorage.removeItem("user");
-            localStorage.removeItem("isLoggedIn");
-        };
-
         try {
             const response = await axios.post('/auth/logout');
-            clearStorage();
+            clearAuthSession();
             return { success: true, message: response.data?.message || "Logged out successfully" };
         } catch (error) {
-            clearStorage();
+            clearAuthSession();
             if (error instanceof AxiosError && error.response) {
                 return { success: true, message: error.response.data?.message || "Logged out successfully" };
             }
